@@ -833,28 +833,19 @@ clEnqueueTask(cl_command_queue ,
               const cl_event * ,
               cl_event * ) ;
 
-extern cl_int
-clEnqueueNativeKernel(cl_command_queue ,
-       void (*user_func)(void *),
-                      void * ,
-                      size_t ,
-                      cl_uint ,
-                      const cl_mem * ,
-                      const void ** ,
-                      cl_uint ,
-                      const cl_event * ,
-                      cl_event * ) ;
-
-extern cl_int
-clEnqueueMarker(cl_command_queue ,
-                cl_event * ) ;
-
-extern cl_int
-clEnqueueWaitForEvents(cl_command_queue ,
-                       cl_uint ,
-                       const cl_event * ) ;
-
-extern cl_int
-clEnqueueBarrier(cl_command_queue ) ;
-extern void * clGetExtensionFunctionAddress(const char * ) ;
+cl_int clEnqueueNativeKernel(cl_command_queue, void (*user_func)(void *), void*, size_t, cl_uint, const cl_mem*, const void**, cl_uint, const cl_event*, cl_event*);
+cl_int clEnqueueMarker(cl_command_queue, cl_event *);
+cl_int clEnqueueWaitForEvents(cl_command_queue, cl_uint, const cl_event*);
+cl_int clEnqueueBarrier(cl_command_queue);
+void*  clGetExtensionFunctionAddress(const char *);
 ]]
+
+local library = {
+   ["OSX"]     = "OpenCL.framework/OpenCL",
+   ["Windows"] = "OPENCL.DLL",
+   ["Linux"]   = "libOpenCL.so",
+   ["BSD"]     = "libOpenCL.so",
+   ["POSIX"]   = "libOpenCL.so",
+   ["Other"]   = "libOpenCL.so",
+}
+return ffi.load( library[ ffi.os ] )
