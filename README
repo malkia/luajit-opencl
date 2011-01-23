@@ -1,0 +1,10 @@
+OpenCL bindings for LuaJIT using the FFI module
+
+The bindings are based on the reference header file from Khronos:
+http://www.khronos.org/registry/cl/api/1.1/cl.h
+
+The bindings were preprocessed using "gcc -E", and I've semi-automatically replaced "#define CL_xxxx value" to "enum CL_xxx value"
+
+Dimiter "malkia" Stanev,
+malkia@gmail.com
+
