@@ -5,6 +5,11 @@ http://www.khronos.org/registry/cl/api/1.1/cl.h
 
 The bindings were preprocessed using "gcc -E", and I've semi-automatically replaced "#define CL_xxxx value" to "enum CL_xxx value"
 
+Once you have compiled luajit (32-bit tested only), test it like this:
+
+luajit opencl-info.lua
+luajit opencl-demo.lua
+
 Dimiter "malkia" Stanev,
 malkia@gmail.com
 

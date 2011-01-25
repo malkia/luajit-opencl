@@ -1,4 +1,4 @@
-local cl = require( "opencl" )
+local cl = require( "cl" )
 local ffi = require( "ffi" )
 
 local function CHK(x)

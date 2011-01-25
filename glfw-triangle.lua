@@ -4,17 +4,6 @@ local gl = require( "gl" )
 local glu = require( "glu" )
 local glfw = require( "glfw" )
 
-local width = 512
-local height = 512
-local use_gl_attachments = true
-local use_gpu = true
-local compute_kernels = {
-   "GradientNoiseArray2d",
-   "MonoFractalArray2d",
-   "TurbulenceArray2d",
-   "RidgedMultiFractalArray2d"
-}
-
 local function main()
    assert( glfw.glfwInit() )
    local window = glfw.glfwOpenWindow( 640, 480, glfw.GLFW_WINDOWED, "Spinning Triangle", nil)
