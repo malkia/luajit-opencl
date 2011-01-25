@@ -13,3 +13,5 @@ luajit opencl-demo.lua
 Dimiter "malkia" Stanev,
 malkia@gmail.com
 
+luajit     - fat OSX binary (x86 x86_64) - 705f593ffc91ecfc42f0de81b86fe4a6c3097958 git://luajit.org/git/luajit-2.0.git
+glfw.dylib - fat OSX binary (x86 x86_64) - 0f0cff46f063818b22d27ecec41e2e9a0215d209 git://glfw.git.sourceforge.net/gitroot/glfw/glfw
