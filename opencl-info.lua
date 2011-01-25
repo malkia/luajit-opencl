@@ -87,7 +87,10 @@ end
 
 local platforms = clGetPlatforms()
 
-for k,v in pairs(platforms[1]) do
-   print(tostring(k).." = "..tostring(v))
+for _,platform in pairs(platforms) do
+  for k,v in pairs(platform) do
+     print(tostring(k).." = "..tostring(v))
+  end
+  print("\n")
 end
 

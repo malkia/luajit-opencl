@@ -10,12 +10,12 @@ local function CHK(x)
 end
 
 local source = [[
-      __kernel square( __global float* input, __global float* output, const unsigned int count)
+      __kernel void square(__global const float* input, __global float* output, const unsigned int count)
       {                                            
 	 int i = get_global_id(0);
 	 if( i < count )                 
 	     output[i] = input[i] * input[i];
-      }                                            
+      }
 ]]
 
 local function demo1(gpu)
@@ -27,15 +27,42 @@ local function demo1(gpu)
 
    local count = 1024
 
-   local device_id = ffi.new("cl_device_id[1]")
-   CHK(cl.clGetDeviceIDs(nil, gpu and cl.CL_DEVICE_TYPE_GPU or cl.CL_DEVICE_TYPE_CPU, 1, device_id, nil))
+   local num_platforms = ffi.new("cl_uint[1]")
+   CHK(cl.clGetPlatformIDs(0, nil, num_platforms))
+   num_platforms = num_platforms[0]
+   
+   print( "OpenCL Platform Count:", num_platforms )
+   
+   local platforms = ffi.new("cl_platform_id[?]", num_platforms)
+   CHK(cl.clGetPlatformIDs(num_platforms, platforms, nil))
+   
+   for p = 0, num_platforms-1 do
+	local platform = platforms[ p ]
+   end
+   
+   local platform = platforms[0]
+   local device_types = cl.CL_DEVICE_TYPE_ALL
 
+   print( "OpenCL Platform Selected:", platform )
+   
+   local num_devices = ffi.new("cl_uint[1]")
+   CHK(cl.clGetDeviceIDs(platform, device_types, 0, nil, num_devices))
+   num_devices = num_devices[0]
+   
+   print( "OpenCL Platform Device Count:", num_devices)
+   
+   local device_ids = ffi.new("cl_device_id[?]", num_devices)
+   CHK(cl.clGetDeviceIDs(platform, device_types, num_devices, device_ids, nil))
+   
    local err = ffi.new("int[1]")
 
-   local context = cl.clCreateContext(nil, 1, device_id, nil, nil, err)
+   local context = cl.clCreateContext(nil, num_devices, device_ids, nil, nil, err)
    assert(CHK(err[0]) and context ~= nil)
 
-   local commands = cl.clCreateCommandQueue(context, device_id[0], 0, err)
+   local device = device_ids[0]
+   print( "OpenCL Platform Device Selected:", device )
+   
+   local commands = cl.clCreateCommandQueue(context, device, 0, err)
    assert(CHK(err[0]) and commands ~= nil)
 
    local src = ffi.new("char[?]", #source+1, source)
@@ -70,7 +97,7 @@ local function demo1(gpu)
 
    local work_group_size = ffi.new("size_t[1]")
    CHK(cl.clGetKernelWorkGroupInfo(
-	  kernel, device_id[0], cl.CL_KERNEL_WORK_GROUP_SIZE, 
+	  kernel, device_ids[0], cl.CL_KERNEL_WORK_GROUP_SIZE, 
 	  ffi.sizeof(work_group_size), work_group_size, nil
     ))
    print( "Work Group Size:", work_group_size[0])
@@ -104,6 +131,6 @@ local function demo1(gpu)
    print("end!")
 end
 
-demo1(true)
+--demo1(true)
 demo1(false)
 
