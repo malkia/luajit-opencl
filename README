@@ -1,17 +1,21 @@
-OpenCL bindings for LuaJIT using the FFI module
+This repository contains various FFI library bindings for LuaJIT:
+	cl.lua (OpenCL)
+	gl.lua (OpenGL)
+	glu.lua (GLU)
+	glfw.lua (GLFW, http://www.glfw.org)
+	
+Precompiled executables and dynamic libraries were made available:
+	luajit.exe - 32-bit Windows executable
+	glfw.dll   - 32-bit Windows dynamic library
+	luajit     - 32-bit and 64-bit (fat) Mac OS X
+	glfw.dylib - 32-bit and 64-bit (fat) Mac OS X
 
-The bindings are based on the reference header file from Khronos:
-http://www.khronos.org/registry/cl/api/1.1/cl.h
+You can try the examples from the command-line:
+	luajit cl-demo.lua
+	luajit cl-info.lua
+	luajit glfw-triangle.lua
+	luajit glfw-boing.lua
+	luajit noise.lua
 
-The bindings were preprocessed using "gcc -E", and I've semi-automatically replaced "#define CL_xxxx value" to "enum CL_xxx value"
-
-Once you have compiled luajit (32-bit tested only), test it like this:
-
-luajit opencl-info.lua
-luajit opencl-demo.lua
-
-Dimiter "malkia" Stanev,
+Dimiter "malkia" Stanev
 malkia@gmail.com
-
-luajit     - fat OSX binary (x86 x86_64) - 705f593ffc91ecfc42f0de81b86fe4a6c3097958 git://luajit.org/git/luajit-2.0.git
-glfw.dylib - fat OSX binary (x86 x86_64) - 0f0cff46f063818b22d27ecec41e2e9a0215d209 git://glfw.git.sourceforge.net/gitroot/glfw/glfw
