@@ -83,7 +83,9 @@ local function main()
 
       gl.glViewport(0, 0, width, height);
       gl.glClearColor(0, 0, 0, 0);
+      if random() * signal_noise < 0.30 then
       gl.glClear(gl.GL_COLOR_BUFFER_BIT);
+      end
 
       gl.glMatrixMode(gl.GL_PROJECTION);
       gl.glLoadIdentity();
