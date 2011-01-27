@@ -9,6 +9,10 @@ local rshift, band = bit.rshift, bit.band
 
 local signal_noise = 0
 
+local vbo_capacity = 640*480*2
+local vbo_index = 0
+local vbo = ffi.new( "float[?]", vbo_capacity )
+
 local function draw_char(x,y,c)
    if random()*signal_noise > 0.25 then
       c = c + 1
@@ -20,14 +24,18 @@ local function draw_char(x,y,c)
       for j=0,7 do
 	 local m = band(rshift(b, 7-j), 1)
 	 if m == 1 and random() >= signal_noise then
-	    gl.glVertex3f(x+j+random()*signal_noise,y+i+random()*signal_noise,0)
+	    local x = x + j + random()*signal_noise
+	    local y = y + i + random()*signal_noise
+	    vbo[ vbo_index + 0 ] = x
+	    vbo[ vbo_index + 1 ] = y
+	    vbo_index = vbo_index + 2
 	 end
       end
    end
 end
 
 local function draw_string(x,y,s)
-   gl.glBegin( gl.GL_POINTS )
+--   gl.glBegin( gl.GL_POINTS )
    for i=1,#s do
       local c = s:byte(i)
       if c == 10 or c == 13 then
@@ -42,7 +50,7 @@ local function draw_string(x,y,s)
 	 x = x + 8
       end
    end
-   gl.glEnd()
+--   gl.glEnd()
 end
 
 local function read_file(n)
@@ -104,7 +112,12 @@ local function main()
       if signal_noise > 1 then
 	 signal_noise = 1
       end
-      
+
+      gl.glEnableClientState(gl.GL_VERTEX_ARRAY);
+      gl.glVertexPointer(2, gl.GL_FLOAT, 0, vbo);
+      gl.glDrawArrays(gl.GL_POINTS, 0, vbo_index);
+      vbo_index = 0
+
       glfw.glfwSwapBuffers();
       glfw.glfwPollEvents();
       pt, ct = ct, glfw.glfwGetTime()
