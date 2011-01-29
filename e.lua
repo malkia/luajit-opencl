@@ -1,1 +1,1 @@
-File to save in: ~/p/luajit-opencl/
+-- empty
