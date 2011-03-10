@@ -1,5 +1,7 @@
-local cl = require( "cl" )
+#!luajit 
+
 local ffi = require( "ffi" )
+local cl = require( "cl" )
 
 local function CHK(x)
    if x ~= cl.CL_SUCCESS then
@@ -9,46 +11,48 @@ local function CHK(x)
    return x
 end
 
-local cl_uint = ffi.typeof("cl_uint[?]")
-local cl_bool = ffi.typeof("cl_bool[?]")
-local cl_platform_id = ffi.typeof("cl_platform_id[?]")
-local size_t = ffi.typeof("size_t[?]")
-local char = ffi.typeof("char[?]")
+local cl_uint             = ffi.typeof("cl_uint[?]")
+local cl_bool             = ffi.typeof("cl_bool[?]")
+local cl_platform_id      = ffi.typeof("cl_platform_id[?]")
+local size_t              = ffi.typeof("size_t[?]")
+local char                = ffi.typeof("char[?]")
 local cl_device_fp_config = ffi.typeof("cl_device_fp_config[?]")
 
 function clGetPlatforms()
    local num_platforms = cl_uint(1)
-   if cl.clGetPlatformIDs(0, nil, num_platforms) == cl.CL_SUCCESS then
-      local num_platforms = num_platforms[0]
-      local platforms = cl_platform_id(num_platforms)
-      local r = {}
-      if cl.clGetPlatformIDs(num_platforms, platforms, nil) == cl.CL_SUCCESS then
-	 for i = 0, num_platforms-1 do
-	    local id = platforms[i]
-	    local p = {}
-	    p.id = id
-	    for k,v in pairs { 
-	       name = cl.CL_PLATFORM_NAME,
-	       vendor = cl.CL_PLATFORM_VENDOR,
-	       version = cl.CL_PLATFORM_VERSION,
-	       profile = cl.CL_PLATFORM_PROFILE,
-	       extensions = cl.CL_PLATFORM_EXTENSIONS }
-	    do 
-	       local value_size = size_t(1)
-	       if cl.clGetPlatformInfo(id, v, 0, nil, value_size) == cl.CL_SUCCESS then
-		  local value_size = value_size[0]
-		  local value = char( value_size )
-		  if cl.clGetPlatformInfo(id, v, value_size, value, nil) == cl.CL_SUCCESS then
-		     local value = ffi.string(value)
-		     p[k] = value
-		  end
-	       end
-	    end
-	    r[#r+1] = p
-	 end
-	 return r;
-      end
+   if cl.clGetPlatformIDs(0, nil, num_platforms) ~= cl.CL_SUCCESS then
+      return
    end
+
+   local num_platforms = num_platforms[0]
+   local platforms = cl_platform_id(num_platforms)
+   if cl.clGetPlatformIDs(num_platforms, platforms, nil) ~= cl.CL_SUCCESS then
+      return
+   end
+
+   local r = {}
+   local size_t_1 = size_t(1)
+   for i = 0, num_platforms-1 do
+      local id = platforms[i]
+      local p = { id = id }
+      for k,v in pairs { 
+	 name = cl.CL_PLATFORM_NAME,
+	 vendor = cl.CL_PLATFORM_VENDOR,
+	 version = cl.CL_PLATFORM_VERSION,
+	 profile = cl.CL_PLATFORM_PROFILE,
+	 extensions = cl.CL_PLATFORM_EXTENSIONS }
+      do 
+	 if cl.clGetPlatformInfo(id, v, 0, nil, size_t_1) == cl.CL_SUCCESS then
+	    local value_size = size_t_1[0]
+	    local value = char(value_size)
+	    if cl.clGetPlatformInfo(id, v, value_size, value, nil) == cl.CL_SUCCESS then
+	       p[k] = ffi.string(value)
+	    end
+	 end
+      end
+      r[#r+1] = p
+   end
+   return r;
 end
 
 function clGetDevices(platform_id)
