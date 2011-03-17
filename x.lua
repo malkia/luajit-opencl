@@ -58,6 +58,7 @@ local function CHK(f)
 end
 
 function glCreateShader( gl_shader_type, source )
+   local chk = gl.glGetError
    assert( gl_shader_type == gl.GL_VERTEX_SHADER or gl_shader_type == gl.GL_FRAGMENT_SHADER )
    local shader = CHK(gl.glCreateShader( gl_shader_type ))
    if shader == 0 then
