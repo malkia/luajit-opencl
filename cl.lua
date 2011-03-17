@@ -715,7 +715,8 @@ function clGetDevices(platform_id)
 		     if type == "string" then
 			prop[k] = ffi.string(value, value_size - 1)
 		     else
-		        if value_count > 1 then
+		        if value_count > 1 
+			then
 			  prop[k] = {}
 			  for i = 0, value_count - 1 do
 			    local ok, v = pcall(tonumber, value[i])
