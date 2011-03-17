@@ -34,8 +34,9 @@ local function test_it()
 	    print( "Platform "..tostring( platform_index )..", Device "..tostring( device_index )..": "..tostring( key ).." = "..dump( device[ key ] ))
 	 end
       end
-      print()
    end
 end
 
 test_it()
+
+	
