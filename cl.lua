@@ -280,7 +280,6 @@ enum {
   CL_PROFILING_COMMAND_SUBMIT                  = 0x1281,
   CL_PROFILING_COMMAND_START                   = 0x1282,
   CL_PROFILING_COMMAND_END                     = 0x1283
-  
 };
 
 typedef signed char               int8_t;
@@ -735,6 +734,64 @@ function clGetDevices(platform_id)
       end
    end
 
+   return plist
+end
+
+function clEncodeContextProperties(properties)
+   local count = #properties
+   local props = ffi.new( "cl_context_properties[?]", count )
+   local index = 0
+   for k,v in pairs(properties) do
+      props[ index * 2 + 0 ] = cl[ "CL_CONTEXT_"..k:upper() ]
+      props[ index * 2 + 1 ] = ffi.cast( "cl_context_properties", v )
+      index = index + 2
+   end
+   props[ index * 2 ] = ffi.cast( "cl_context_properties", nil )
+   return props
+end
+
+function clDecodeContextProperties(properties)
+   local props = {}
+   local count = ffi.sizeof( properties ) / ffi.sizeof( "cl_context_properties" )
+   for index=0, count-1, 2 do
+      local key = properties[ key * 2 + 0 ]
+      local val = properties[ key * 2 + 1 ]
+   end
+   return props
+end
+
+function clGetContextInfo(context)
+   local plist = {}
+   for key, type in pairs {
+      reference_count = "cl_uint",  
+      num_devices     = "cl_uint",
+      devices         = "cl_device_id",
+      properties      = "cl_context_properties"
+   }
+   do
+      local value_enum = cl[ "CL_CONTEXT_"..key:upper() ]
+      local value_size = ffi.new( "size_t[1]" )
+      if cl.clGetContextInfo( context, value_enum, 0, nil, value_size ) == cl.CL_SUCCESS
+      then
+	 local value_size = tonumber( value_size[0] )
+	 local value_count = value_size / ffi.sizeof(type)
+	 local value = ffi.new( type.."[?]", value_count )
+	 if cl.clGetContextInfo( context, value_enum, value_size, value, nil ) == cl.CL_SUCCESS
+	 then
+	    if value_count > 1 
+	    then
+	       plist[key] = {}
+	       for i = 0, value_count - 1 do
+		  local ok, v = pcall(tonumber, value[i])
+		  plist[key][i+1] = ok and v or value[i]
+	       end
+	    else
+	       local ok, v = pcall(tonumber, value[0])
+	       plist[key] = ok and v or value[0]
+	    end
+	 end
+      end
+   end
    return plist
 end
 

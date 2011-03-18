@@ -18,89 +18,104 @@ local source = [[
       }
 ]]
 
-local function demo1(gpu)
-   if gpu then
-      print( "demo1 using GPU")
-   else
-      print( "demo1 using CPU")
-   end
-
+local function demo1( devidx )
    local count = 1024
-
-   local num_platforms = ffi.new("cl_uint[1]")
-   CHK(cl.clGetPlatformIDs(0, nil, num_platforms))
-   num_platforms = num_platforms[0]
    
-   print( "OpenCL Platform Count:", num_platforms )
-   
-   local platforms = ffi.new("cl_platform_id[?]", num_platforms)
-   CHK(cl.clGetPlatformIDs(num_platforms, platforms, nil))
-   
-   for p = 0, num_platforms-1 do
-	local platform = platforms[ p ]
+   local devices = {}
+   for platform_index, platform in pairs(clGetPlatforms()) do
+      local platform_devices = clGetDevices(platform.id)
+      for device_index, device in pairs(platform_devices) do
+	 devices[ #devices + 1 ] = device
+      end
    end
-   
-   local platform = platforms[0]
-   local device_types = cl.CL_DEVICE_TYPE_ALL
 
-   print( "OpenCL Platform Selected:", platform )
-   
-   local num_devices = ffi.new("cl_uint[1]")
-   CHK(cl.clGetDeviceIDs(platform, device_types, 0, nil, num_devices))
-   num_devices = num_devices[0]
-   
-   print( "OpenCL Platform Device Count:", num_devices)
-   
-   local device_ids = ffi.new("cl_device_id[?]", num_devices)
-   CHK(cl.clGetDeviceIDs(platform, device_types, num_devices, device_ids, nil))
-   
-   local err = ffi.new("int[1]")
+   local ffi_devices = ffi.new( "cl_device_id[?]", #devices )
+   for k, _ in ipairs( devices ) do
+      ffi_devices[k-1] = devices[ k ].id
+      print( devices[k].id )
+   end
 
-   local context = cl.clCreateContext(nil, num_devices, device_ids, nil, nil, err)
+   devidx = 0
+   print( "You chose device index " .. devidx .. " of [0.." .. #devices - 1 .. "]" )
+   if devidx < 0 or devidx >= #devices then
+      error( "ERROR: ".. #devices .. " devices found. Choose from 0..devices_found-1!" )
+   end
+   local ffi_device = ffi.new( "cl_device_id[1]", ffi_devices[devidx] )
+
+   local err = ffi.new( "int[1]" )
+   local context_properties = ffi.new( "cl_context_properties[3]", cl.CL_CONTEXT_PLATFORM, ffi.cast("intptr_t",devices[devidx+1].platform), ffi.cast("intptr_t", nil) )
+   local context = cl.clCreateContext(context_properties, 1, ffi_device, nil, nil, err)
    assert(CHK(err[0]) and context ~= nil)
 
-   local device = device_ids[0]
-   print( "OpenCL Platform Device Selected:", device )
+   print( "CONTEXT ", context )
+
+   local context_info = clGetContextInfo(context)
    
-   local commands = cl.clCreateCommandQueue(context, device, 0, err)
+   print( "INFO ", context_info )
+   for k,v in pairs(context_info) do print(k,v) end
+
+   local commands = cl.clCreateCommandQueue(context, ffi_device[0], 0, err)
    assert(CHK(err[0]) and commands ~= nil)
+
+   print( "COMMANDS ", commands )
 
    local src = ffi.new("char[?]", #source+1, source)
    local src2 = ffi.new("const char*[1]", src)
    local program = cl.clCreateProgramWithSource(context, 1, src2, nil, err)
    assert(CHK(err[0]) and program ~= nil)
 
+   print( "PROGRAM ", program )
+
    CHK(cl.clBuildProgram(program, 0, nil, nil, nil, nil))
+
+   print( "BUILD? " )
 
    local kernel = cl.clCreateKernel(program, "square", err)
    assert(CHK(err[0]) and kernel ~= nil)
 
+   print( "KERNEL ", kernel )
+
    local data = ffi.new("float[?]", count)
    for i=0,count-1 do data[i] = (i + 10) end
+
+   print( "DATA ", data )
 
    local input = cl.clCreateBuffer(context, cl.CL_MEM_READ_ONLY, ffi.sizeof(data), nil, err)
    assert(CHK(err[0]) and input ~= nil)
 
+   print( "INPUT ", input )
+
    local output = cl.clCreateBuffer(context, cl.CL_MEM_WRITE_ONLY, ffi.sizeof(data), nil, err)
    assert(CHK(err[0]) and output ~= nil)
 
+   print( "OUTPUT ", output )
+
    CHK(cl.clEnqueueWriteBuffer(commands, input, cl.CL_TRUE, 0, ffi.sizeof(data), data, 0, nil, nil))
+
+   print( "ENQUEUED? " )
 
    local input2 = ffi.new("cl_mem[1]", input)
    CHK(cl.clSetKernelArg(kernel, 0, ffi.sizeof("cl_mem"), input2))
+   
+   print( "INPUT2 ", input2 )
 
    local output2 = ffi.new("cl_mem[1]", output)
    CHK(cl.clSetKernelArg(kernel, 1, ffi.sizeof("cl_mem"), output2))
 
+   print( "OUTPUT2 ", output2 )
+
    local count2 = ffi.new("int[1]", count)
    CHK(cl.clSetKernelArg(kernel, 2, ffi.sizeof("int"), count2))
 
+   print( "COUNT2 ", count2 )
+
    local work_group_size = ffi.new("size_t[1]")
    CHK(cl.clGetKernelWorkGroupInfo(
-	  kernel, device_ids[0], cl.CL_KERNEL_WORK_GROUP_SIZE, 
+	  kernel, ffi_device[0], cl.CL_KERNEL_WORK_GROUP_SIZE, 
 	  ffi.sizeof(work_group_size), work_group_size, nil
     ))
-   print( "Work Group Size:", work_group_size[0])
+
+   print( "WORK GROUP SIZE ", work_group_size[0] )
 
    local global = ffi.new("size_t[1]", count)
    CHK(cl.clEnqueueNDRangeKernel(
@@ -110,6 +125,8 @@ local function demo1(gpu)
 	  0, nil, nil
     ))
 
+   print( "ENQUEUE-ND-RANGE-KERNEL? " )
+
    CHK(cl.clFinish(commands))
 
    local results = ffi.new("float[?]", count)
@@ -117,7 +134,7 @@ local function demo1(gpu)
 
    for i=0,count-1 do
       io.stdout:write(results[i])
-      io.stdout:write(' ')
+      io.stdout:write('\t')
    end
    io.stdout:write("\n")
 
@@ -128,9 +145,9 @@ local function demo1(gpu)
    CHK(cl.clReleaseCommandQueue(commands));
    CHK(cl.clReleaseContext(context));
 
-   print("end!")
+   print( "END!" )
 end
 
 --demo1(true)
-demo1(false)
+demo1(0)
 
