@@ -34,24 +34,24 @@ enum {
    GLFW_VERSION_MINOR         =  0,
    GLFW_VERSION_REVISION      =  0,
    
-   -- Key and button state/action definitions 
+   // Key and button state/action definitions 
    GLFW_RELEASE               =  0,
    GLFW_PRESS                 =  1,
 
-   -- Keyboard raw key codes.
-   -- These key codes are inspired by the USB HID Usage Tables v1.12 (p. 53-60),
-   -- but re-arranged to map to 7-bit ASCII for printable keys (function keys are
-   -- put in the 256+ range).
-   -- The naming of the key codes follow these rules:
-   --  - The US keyboard layout is used.
-   --  - Names of printable alpha-numeric characters are used (e.g. "A", "R",
-   --    "3", etc).
-   --  - For non-alphanumeric characters, Unicode:ish names are used (e.g.
-   --    "COMMA", "LEFT_SQUARE_BRACKET", etc). Note that some names do not
-   --    correspond to the Unicode standard (usually for brevity).
-   --  - Keys that lack a clear US mapping are named "WORLD_x".
-   --  - For non-printable keys, custom names are used (e.g. "F4",
-   --    "BACKSPACE", etc).
+   // Keyboard raw key codes.
+   // These key codes are inspired by the USB HID Usage Tables v1.12 (p. 53-60),
+   // but re-arranged to map to 7-bit ASCII for printable keys (function keys are
+   // put in the 256+ range).
+   // The naming of the key codes follow these rules:
+   //  - The US keyboard layout is used.
+   //  - Names of printable alpha-numeric characters are used (e.g. "A", "R",
+   //    "3", etc).
+   //  - For non-alphanumeric characters, Unicode:ish names are used (e.g.
+   //    "COMMA", "LEFT_SQUARE_BRACKET", etc). Note that some names do not
+   //    correspond to the Unicode standard (usually for brevity).
+   //  - Keys that lack a clear US mapping are named "WORLD_x".
+   //  - For non-printable keys, custom names are used (e.g. "F4",
+   //    "BACKSPACE", etc).
    GLFW_KEY_SPACE             = 32,
    GLFW_KEY_APOSTROPHE        = 39, 
    GLFW_KEY_COMMA             = 44, 
