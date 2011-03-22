@@ -1,3 +1,4 @@
+#!/usr/bin/env luajit 
 local ffi = require( "ffi" )
 
 ffi.cdef[[
@@ -777,6 +778,42 @@ function clGetContextInfo(context)
 	 local value_count = value_size / ffi.sizeof(type)
 	 local value = ffi.new( type.."[?]", value_count )
 	 if cl.clGetContextInfo( context, value_enum, value_size, value, nil ) == cl.CL_SUCCESS
+	 then
+	    if value_count > 1 
+	    then
+	       plist[key] = {}
+	       for i = 0, value_count - 1 do
+		  local ok, v = pcall(tonumber, value[i])
+		  plist[key][i+1] = ok and v or value[i]
+	       end
+	    else
+	       local ok, v = pcall(tonumber, value[0])
+	       plist[key] = ok and v or value[0]
+	    end
+	 end
+      end
+   end
+   return plist
+end
+
+function clGetKernelWorkGroupInfo(kernel, device)
+   local plist = {}
+   for key, type in pairs {
+      work_group_size                    = "size_t",
+      compile_work_group_size            = "size_t",
+      local_mem_size                     = "cl_ulong",
+      preferred_work_group_size_multiple = "size_t",
+      private_mem_size                   = "cl_ulong",
+   }
+   do
+      local value_enum = cl[ "CL_KERNEL_"..key:upper() ]
+      local value_size = ffi.new( "size_t[1]" )
+      if cl.clGetKernelWorkGroupInfo( context, device, value_enum, 0, nil, value_size ) == cl.CL_SUCCESS
+      then
+	 local value_size = tonumber( value_size[0] )
+	 local value_count = value_size / ffi.sizeof(type)
+	 local value = ffi.new( type.."[?]", value_count )
+	 if cl.clGetKernelWorkGroupInfo( context, device, value_enum, value_size, value, nil ) == cl.CL_SUCCESS
 	 then
 	    if value_count > 1 
 	    then
